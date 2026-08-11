@@ -118,14 +118,7 @@ export function AdminProvider({ children }) {
       addItemToCategory, deleteItemFromCategory, updateItemInCategory,
       pushChanges, isLoading
     }}>
-      {isLoading ? (
-        <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--background)' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--primary)', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} />
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AdminContext.Provider>
   )
 }

@@ -693,16 +693,13 @@ export default function App() {
       })
     })
 
-    // Refresh ScrollTrigger after DOM is fully painted
-    // Use rAF + timeout to ensure the browser has rendered elements
-    // before ScrollTrigger calculates their viewport positions
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        ScrollTrigger.refresh()
-      }, 100)
+    // Wait for next paint to ensure layout is settled, then refresh
+    const rafId = requestAnimationFrame(() => {
+      ScrollTrigger.refresh(true)
     })
 
     return () => {
+      cancelAnimationFrame(rafId)
       ScrollTrigger.getAll().forEach(t => t.kill())
     }
   }, [currentPage])
