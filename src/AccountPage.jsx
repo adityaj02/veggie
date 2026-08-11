@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAdmin, BackgroundMedia } from './AdminContext'
 import { useAuth } from './AuthContext'
+import { API_BASE } from './config'
 import './AccountPage.css'
 
 export default function AccountPage() {
@@ -19,7 +20,7 @@ export default function AccountPage() {
   useEffect(() => {
     if (user) {
       setIsLoadingOrders(true)
-      fetch('/api/orders/me')
+      fetch(`${API_BASE}/api/orders/me`)
         .then(r => r.json())
         .then(data => setOrders(Array.isArray(data) ? data : []))
         .catch(console.error)

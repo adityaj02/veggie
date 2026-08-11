@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { MENU_SECTIONS as DEFAULT_MENU_SECTIONS } from './menuData'
+import { API_BASE } from './config'
 
 const AdminContext = createContext()
 
@@ -17,8 +18,8 @@ export function AdminProvider({ children }) {
       const timeout = setTimeout(() => controller.abort(), 3000) // 3s timeout
       try {
         const [settingsRes, menuRes] = await Promise.all([
-          fetch('/api/settings', { signal: controller.signal }),
-          fetch('/api/menu', { signal: controller.signal })
+          fetch(`${API_BASE}/api/settings`, { signal: controller.signal }),
+          fetch(`${API_BASE}/api/menu`, { signal: controller.signal })
         ])
         clearTimeout(timeout)
         
@@ -49,7 +50,7 @@ export function AdminProvider({ children }) {
   // Push all changes to the live database
   const pushChanges = async () => {
     try {
-      const res = await fetch('/api/seed', {
+      const res = await fetch(`${API_BASE}/api/seed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

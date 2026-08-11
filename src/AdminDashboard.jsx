@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAdmin } from './AdminContext'
 import { useBlogs } from './BlogContext'
+import { API_BASE } from './config'
 import './AdminDashboard.css'
 
 export default function AdminDashboard() {
@@ -253,12 +254,12 @@ function AdminOrders() {
   const [orders, setOrders] = useState([])
   
   useEffect(() => {
-    fetch('/api/orders').then(r => r.json()).then(setOrders).catch(console.error)
+    fetch(`${API_BASE}/api/orders`).then(r => r.json()).then(setOrders).catch(console.error)
   }, [])
 
   const updateStatus = async (id, status) => {
     try {
-      const res = await fetch(`/api/orders/${id}/status`, {
+      const res = await fetch(`${API_BASE}/api/orders/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -275,7 +276,7 @@ function AdminOrders() {
   const cancelOrder = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this order? An email will be sent to the customer.")) return
     try {
-      const res = await fetch(`/api/orders/${id}/cancel`, { method: 'PUT' })
+      const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT' })
       if (res.ok) {
         const updated = await res.json()
         setOrders(orders.map(o => o._id === id ? updated : o))
@@ -348,7 +349,7 @@ function AdminActivity() {
   const [logs, setLogs] = useState([])
 
   useEffect(() => {
-    fetch('/api/activity').then(r => r.json()).then(setLogs).catch(console.error)
+    fetch(`${API_BASE}/api/activity`).then(r => r.json()).then(setLogs).catch(console.error)
   }, [])
 
   return (

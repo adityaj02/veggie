@@ -11,6 +11,7 @@ import { SECTION_EMOJI } from './menuData'
 import { getRecommendations } from './recommendationEngine'
 import { useAdmin, BackgroundMedia } from './AdminContext'
 import { useAuth } from './AuthContext'
+import { API_BASE } from './config'
 import './CheckoutPage.css'
 
 /* ── Helpers ──────────────────────────────── */
@@ -147,7 +148,7 @@ export default function CheckoutPage() {
         instructions: activeForm.instructions
       }
 
-      const res = await fetch('/api/orders', {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload)

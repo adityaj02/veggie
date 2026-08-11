@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE } from './config';
 
 const AuthContext = createContext();
 
@@ -9,7 +10,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch('/api/auth/me');
+        const res = await fetch(`${API_BASE}/api/auth/me`);
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
@@ -25,12 +26,14 @@ export function AuthProvider({ children }) {
 
   const login = () => {
     // Redirect to backend OAuth route
-    window.location.href = 'http://localhost:5000/auth/google';
+    // Fallback to localhost if API_BASE is not configured
+    const backendUrl = API_BASE || 'http://localhost:5000';
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
       setUser(null);
     } catch (err) {
       console.error('Logout failed', err);

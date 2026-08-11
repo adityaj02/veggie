@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { API_BASE } from './config'
 
 const BlogContext = createContext()
 
@@ -30,7 +31,7 @@ export function BlogProvider({ children }) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 3000)
       try {
-        const res = await fetch('/api/blogs', { signal: controller.signal })
+        const res = await fetch(`${API_BASE}/api/blogs`, { signal: controller.signal })
         clearTimeout(timeout)
         if (res.ok) {
           const data = await res.json()
@@ -63,7 +64,7 @@ export function BlogProvider({ children }) {
     }
     
     try {
-      const res = await fetch('/api/blogs', {
+      const res = await fetch(`${API_BASE}/api/blogs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBlog)
@@ -81,7 +82,7 @@ export function BlogProvider({ children }) {
 
   const deleteBlog = async (id) => {
     try {
-      const res = await fetch(`/api/blogs/${id}`, {
+      const res = await fetch(`${API_BASE}/api/blogs/${id}`, {
         method: 'DELETE'
       })
       if (res.ok) {
