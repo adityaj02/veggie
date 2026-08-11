@@ -693,8 +693,18 @@ export default function App() {
       })
     })
 
-    // Refresh ScrollTrigger after DOM changes
-    ScrollTrigger.refresh()
+    // Refresh ScrollTrigger after DOM is fully painted
+    // Use rAF + timeout to ensure the browser has rendered elements
+    // before ScrollTrigger calculates their viewport positions
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        ScrollTrigger.refresh()
+      }, 100)
+    })
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill())
+    }
   }, [currentPage])
 
   const goMenu = (e) => {

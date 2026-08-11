@@ -27,8 +27,11 @@ export function BlogProvider({ children }) {
 
   useEffect(() => {
     async function fetchBlogs() {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 3000)
       try {
-        const res = await fetch('/api/blogs')
+        const res = await fetch('/api/blogs', { signal: controller.signal })
+        clearTimeout(timeout)
         if (res.ok) {
           const data = await res.json()
           if (data && data.length > 0) {
@@ -36,9 +39,12 @@ export function BlogProvider({ children }) {
           } else {
             setBlogs(INITIAL_BLOGS)
           }
+        } else {
+          setBlogs(INITIAL_BLOGS)
         }
       } catch (err) {
-        console.error("Failed to fetch blogs from API", err)
+        clearTimeout(timeout)
+        console.warn("Backend unavailable for blogs, using defaults", err.name === 'AbortError' ? '(timeout)' : err.message)
         setBlogs(INITIAL_BLOGS)
       } finally {
         setIsLoading(false)

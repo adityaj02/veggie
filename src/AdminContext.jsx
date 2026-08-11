@@ -10,14 +10,17 @@ export function AdminProvider({ children }) {
   const [menuSections, setMenuSections] = useState(DEFAULT_MENU_SECTIONS)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch from backend on mount
+  // Fetch from backend on mount (with timeout for static deployments)
   useEffect(() => {
     async function fetchData() {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 3000) // 3s timeout
       try {
         const [settingsRes, menuRes] = await Promise.all([
-          fetch('/api/settings'),
-          fetch('/api/menu')
+          fetch('/api/settings', { signal: controller.signal }),
+          fetch('/api/menu', { signal: controller.signal })
         ])
+        clearTimeout(timeout)
         
         if (settingsRes.ok) {
           const settings = await settingsRes.json()
@@ -34,7 +37,8 @@ export function AdminProvider({ children }) {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch from backend, using defaults/localStorage", err)
+        clearTimeout(timeout)
+        console.warn("Backend unavailable, using defaults", err.name === 'AbortError' ? '(timeout)' : err.message)
       } finally {
         setIsLoading(false)
       }
