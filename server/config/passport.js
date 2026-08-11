@@ -2,12 +2,25 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 
-const clientSecretFile = require('../../client_secret_846891190750-7qs2jm2okb5se3mu916913ls7udq1e76.apps.googleusercontent.com.json');
+let clientID = process.env.GOOGLE_CLIENT_ID;
+let clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+let callbackURL = process.env.GOOGLE_CALLBACK_URL;
+
+if (!clientID || !clientSecret || !callbackURL) {
+  try {
+    const clientSecretFile = require('../../client_secret_846891190750-7qs2jm2okb5se3mu916913ls7udq1e76.apps.googleusercontent.com.json');
+    clientID = clientID || clientSecretFile.web.client_id;
+    clientSecret = clientSecret || clientSecretFile.web.client_secret;
+    callbackURL = callbackURL || clientSecretFile.web.redirect_uris[0];
+  } catch (err) {
+    console.warn('Google OAuth credentials not fully configured in environment or local JSON file.');
+  }
+}
 
 passport.use(new GoogleStrategy({
-    clientID: clientSecretFile.web.client_id,
-    clientSecret: clientSecretFile.web.client_secret,
-    callbackURL: clientSecretFile.web.redirect_uris[0]
+    clientID,
+    clientSecret,
+    callbackURL
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
