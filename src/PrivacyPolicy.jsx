@@ -1,77 +1,47 @@
-import React, { useEffect } from 'react'
-import './PrivacyPolicy.css'
+import React from 'react';
+import { useAdmin, BackgroundMedia } from './AdminContext';
+import './PrivacyPolicy.css';
 
 export default function PrivacyPolicy() {
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
+  const { menuBackdrop } = useAdmin();
+  
   return (
-    <div className="privacy-page">
-      <header className="privacy-header">
-        <h1>Privacy Policy</h1>
-        <p>Last updated: October 24, 2023</p>
-      </header>
+    <div className="privacy-page" style={{ position: 'relative', minHeight: '100vh', paddingTop: '100px', paddingBottom: '64px' }}>
+      <div className="page-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <BackgroundMedia media={menuBackdrop} />
+        <div className="page-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(20, 19, 19, 0.85)', backdropFilter: 'blur(12px)' }} />
+      </div>
 
-      <div className="privacy-content">
-        <section>
-          <h2>Introduction</h2>
-          <p>
-            Welcome to Veggies Kitchen. We respect your privacy and are committed to protecting your personal data. 
-            This privacy policy will inform you as to how we look after your personal data when you visit our website 
-            and tell you about your privacy rights and how the law protects you.
-          </p>
-        </section>
+      <div className="privacy-container glass-panel">
+        <h1 className="text-display-md text-primary" style={{ marginBottom: '32px', textAlign: 'center' }}>Privacy Policy</h1>
+        
+        <div className="privacy-content text-body-lg text-on-surface-variant">
+          <section className="privacy-section">
+            <h2 className="text-headline-sm text-secondary">1. Information We Collect</h2>
+            <p>At Veggies Kitchen, we collect information to provide better services to all our users. This includes your Name, Email Address, Contact Number, and Delivery Location/Addresses.</p>
+          </section>
 
-        <section>
-          <h2>The Data We Collect About You</h2>
-          <p>
-            We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:
-          </p>
-          <ul>
-            <li><strong>Identity Data</strong> includes first name, last name, username or similar identifier.</li>
-            <li><strong>Contact Data</strong> includes delivery address, billing address, email address and telephone numbers.</li>
-            <li><strong>Financial Data</strong> includes bank account and payment card details (processed securely via our payment partners).</li>
-            <li><strong>Transaction Data</strong> includes details about payments to and from you and other details of products and services you have purchased from us.</li>
-            <li><strong>Technical Data</strong> includes internet protocol (IP) address, your login data, browser type and version, time zone setting and location.</li>
-          </ul>
-        </section>
+          <section className="privacy-section">
+            <h2 className="text-headline-sm text-secondary">2. Use of Email and Phone Number</h2>
+            <p>We use your email address and phone number exclusively for order tracking, confirmation, and critical updates regarding your delivery. We respect your inbox and will not send promotional spam without your explicit consent.</p>
+          </section>
 
-        <section>
-          <h2>How We Use Your Data</h2>
-          <p>We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
-          <ul>
-            <li>Where we need to perform the contract we are about to enter into or have entered into with you (e.g., fulfilling an order).</li>
-            <li>Where it is necessary for our legitimate interests (or those of a third party) and your interests and fundamental rights do not override those interests.</li>
-            <li>Where we need to comply with a legal obligation.</li>
-          </ul>
-        </section>
+          <section className="privacy-section">
+            <h2 className="text-headline-sm text-secondary">3. Location Data</h2>
+            <p>Your location data (street address, city, state, pincode) is strictly utilized to process your delivery orders accurately and efficiently. We may also use generalized location data to recommend nearby specialties or optimize delivery routes.</p>
+          </section>
 
-        <section>
-          <h2>Data Security</h2>
-          <p>
-            We have put in place appropriate security measures to prevent your personal data from being accidentally lost, 
-            used or accessed in an unauthorised way, altered or disclosed. In addition, we limit access to your personal data 
-            to those employees, agents, contractors and other third parties who have a business need to know. 
-            They will only process your personal data on our instructions and they are subject to a duty of confidentiality.
-          </p>
-        </section>
-
-        <section>
-          <h2>Your Legal Rights</h2>
-          <p>Under certain circumstances, you have rights under data protection laws in relation to your personal data, including the right to:</p>
-          <ul>
-            <li>Request access to your personal data.</li>
-            <li>Request correction of your personal data.</li>
-            <li>Request erasure of your personal data.</li>
-            <li>Object to processing of your personal data.</li>
-            <li>Request restriction of processing your personal data.</li>
-          </ul>
-          <p>
-            If you wish to exercise any of the rights set out above, please <a href="#contact">contact us</a>.
-          </p>
-        </section>
+          <section className="privacy-section">
+            <h2 className="text-headline-sm text-secondary">4. Data for AI &amp; Training</h2>
+            <p>We do not use your personal identifiable information (PII) to train machine learning models or AI algorithms. Any data utilized for improving our recommendation engine is fully anonymized and aggregated to protect your identity.</p>
+          </section>
+          
+          <section className="privacy-section">
+            <h2 className="text-headline-sm text-secondary">5. Data Protection</h2>
+            <p>Your data is secured using industry-standard encryption protocols. We do not sell or share your personal data with third-party marketers.</p>
+          </section>
+        </div>
       </div>
     </div>
-  )
+  );
 }

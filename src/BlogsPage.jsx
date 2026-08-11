@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react'
 import { useBlogs } from './BlogContext'
+import { useAdmin, BackgroundMedia } from './AdminContext'
 import './Blogs.css'
 
 export default function BlogsPage() {
   const { blogs } = useBlogs()
+  const { menuBackdrop } = useAdmin()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -15,8 +17,11 @@ export default function BlogsPage() {
   }
 
   return (
-    <div className="blogs-page-root">
-      <div className="blogs-page-bg" />
+    <div className="blogs-page-root" style={{ position: 'relative', minHeight: '100vh' }}>
+      <div className="page-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <BackgroundMedia media={menuBackdrop} />
+        <div className="page-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(20, 19, 19, 0.85)', backdropFilter: 'blur(12px)' }} />
+      </div>
       <div className="blogs-page">
         <header className="blogs-header">
           <div>

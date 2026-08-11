@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { MENU_SECTIONS, SECTION_EMOJI, searchProducts, getProductCount } from './menuData'
+import { SECTION_EMOJI } from './menuData'
+import { useAdmin, BackgroundMedia } from './AdminContext'
 import { useCart } from './CartContext'
 import './MenuPage.css'
 import gsap from 'gsap'
@@ -83,8 +84,8 @@ function MenuSectionBlock({ section }) {
         <span className="menu-section-count">{section.items.length} items</span>
       </div>
       <div className="product-grid">
-        {section.items.map((item) => (
-          <ProductCard key={item.id} item={item} sectionId={section.id} />
+        {section.items.map((item, index) => (
+          <ProductCard key={`${section.id}-${item.id}-${index}`} item={item} sectionId={section.id} />
         ))}
       </div>
     </div>
@@ -116,8 +117,8 @@ function SearchResults({ results, query }) {
         </span>
       </div>
       <div className="product-grid">
-        {results.map((item) => (
-          <div key={item.id} style={{ position: 'relative' }}>
+        {results.map((item, index) => (
+          <div key={`${item.sectionId}-${item.id}-${index}`} style={{ position: 'relative' }}>
             <ProductCard item={item} sectionId={item.sectionId} />
             <span className="search-result-section" style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
               {item.sectionName}
@@ -134,19 +135,25 @@ function SearchResults({ results, query }) {
    ══════════════════════════════════════════════ */
 export default function MenuPage() {
   const { cartCount, cartTotal } = useCart()
+  const { menuSections, menuBackdrop } = useAdmin()
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeSection, setActiveSection] = useState(MENU_SECTIONS[0]?.id || '')
+  const [activeSection, setActiveSection] = useState(menuSections[0]?.id || '')
   const [showBackTop, setShowBackTop] = useState(false)
   const navRef = useRef(null)
   const isScrollingRef = useRef(false)
 
-  const totalProducts = useMemo(() => getProductCount(), [])
+  const totalProducts = useMemo(() => menuSections.reduce((sum, s) => sum + s.items.length, 0), [menuSections])
 
   // Search results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return null
-    return searchProducts(searchQuery)
-  }, [searchQuery])
+    const q = searchQuery.toLowerCase()
+    return menuSections.flatMap(s => 
+      s.items.filter(item => 
+        item.name.toLowerCase().includes(q) || (item.description && item.description.toLowerCase().includes(q))
+      ).map(item => ({...item, sectionId: s.id, sectionName: s.name}))
+    )
+  }, [searchQuery, menuSections])
 
   const isSearching = searchResults !== null
 
@@ -158,9 +165,9 @@ export default function MenuPage() {
       if (isScrollingRef.current) return
 
       const scrollY = window.scrollY + 160
-      let current = MENU_SECTIONS[0]?.id || ''
+      let current = menuSections[0]?.id || ''
 
-      for (const section of MENU_SECTIONS) {
+      for (const section of menuSections) {
         const el = document.getElementById(`section-${section.id}`)
         if (el && el.offsetTop <= scrollY) {
           current = section.id
@@ -173,7 +180,7 @@ export default function MenuPage() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [isSearching])
+  }, [isSearching, menuSections])
 
   // Scroll to section when category pill is clicked
   const scrollToSection = useCallback((sectionId) => {
@@ -226,19 +233,19 @@ export default function MenuPage() {
 
   return (
     <div className="menu-page">
+      {/* ── Fixed Video Background ── */}
+      <div className="page-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <BackgroundMedia media={menuBackdrop} />
+        <div className="page-overlay" style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'rgba(20, 19, 19, 0.85)', 
+          backdropFilter: 'blur(12px)' 
+        }} />
+      </div>
+
       {/* ── Hero ── */}
-      <section className="menu-hero">
-        <div className="menu-hero-bg">
-          <video
-            className="menu-hero-video"
-            src="/Chef_cooks_and_delivers_food_202608071354.mp4"
-            autoPlay
-            muted
-            playsInline
-            onEnded={(e) => e.target.pause()}
-          />
-          <div className="menu-hero-overlay" />
-        </div>
+      <section className="menu-hero" style={{ background: 'transparent' }}>
         <div className="menu-hero-content">
           <div className="menu-hero-badge">
             <span className="material-symbols-outlined icon-filled">eco</span>
@@ -248,7 +255,7 @@ export default function MenuPage() {
             Our Complete <span className="accent">Menu</span>
           </h1>
           <p className="menu-hero-subtitle">
-            Explore {totalProducts}+ handcrafted dishes across {MENU_SECTIONS.length} categories — from smoky tandoor to
+            Explore {totalProducts}+ handcrafted dishes across {menuSections.length} categories — from smoky tandoor to
             creamy curries, every bite tells a story.
           </p>
 
@@ -258,7 +265,7 @@ export default function MenuPage() {
               <div className="menu-hero-stat-label">Dishes</div>
             </div>
             <div className="menu-hero-stat">
-              <div className="menu-hero-stat-value">{MENU_SECTIONS.length}</div>
+              <div className="menu-hero-stat-value">{menuSections.length}</div>
               <div className="menu-hero-stat-label">Categories</div>
             </div>
             <div className="menu-hero-stat">
@@ -295,7 +302,7 @@ export default function MenuPage() {
       {!isSearching && (
         <nav className="menu-category-nav" aria-label="Menu categories">
           <div className="menu-category-nav-inner" ref={navRef}>
-            {MENU_SECTIONS.map((section) => (
+            {menuSections.map((section) => (
               <button
                 key={section.id}
                 className={`menu-category-pill ${activeSection === section.id ? 'active' : ''}`}
@@ -316,7 +323,7 @@ export default function MenuPage() {
         {isSearching ? (
           <SearchResults results={searchResults} query={searchQuery} />
         ) : (
-          MENU_SECTIONS.map((section) => (
+          menuSections.map((section) => (
             <MenuSectionBlock key={section.id} section={section} />
           ))
         )}

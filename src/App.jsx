@@ -13,33 +13,19 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
    DATA — Images, Menu, Carousel
    ══════════════════════════════════════════════ */
 
-import { MENU_SECTIONS } from './menuData'
+import { MENU_SECTIONS as DEFAULT_MENU_SECTIONS } from './menuData'
 
-const allItems = MENU_SECTIONS.flatMap(s => s.items)
+const allItems = DEFAULT_MENU_SECTIONS.flatMap(s => s.items)
 const getMenuImg = (name) => {
   const item = allItems.find(i => i.name.toLowerCase().includes(name.toLowerCase()) && i.image);
   return item ? item.image : '/images/hero_food_spread.png';
 }
 
 const IMG = {
-  hero: '/images/hero_food_spread.png',
   kadhaiPaneer: getMenuImg('Kadhai Paneer'),
   dalMakhani: getMenuImg('Dal Makhani'),
   spices: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDK7oNTeLZ1Fe3xtoP3NVYUUQurVVNpRE6HPP5AZX50WV9F4bSvK8lqOpGP6xdtl5MwHSpe8fSN5TL63kY7O1OtwWqYDvgd_lPR9b_q-6BpXzEkdvCXcL-WL3_rpUbfRo0vq_hKPHCVM-0FR3tYxGWlV4XpFlNlxjKOmyg_wG-Qr8Nvffjmu8IZ8_i6mXJpk_GsB7L223arFlWcpEv-KHwFIzhTQb_-MS4GjCmZFNqUWLEWCr-675L-86yQuKgSwHRjV6dXXpGM-kQ7',
 }
-
-const featuredItemsFromData = allItems.filter(i => i.featured && i.image).slice(0, 3);
-const FEATURED_DISHES = featuredItemsFromData.length === 3 ? featuredItemsFromData.map(i => ({
-  title: i.name,
-  desc: i.description,
-  img: i.image,
-})) : [
-  {
-    title: 'Dal Makhani',
-    desc: 'Our legendary Dal Makhani is simmered for over 24 hours on slow charcoal embers.',
-    img: IMG.dalMakhani,
-  }
-]
 
 const CAROUSEL_DURATION = 4000
 
@@ -50,6 +36,7 @@ const CAROUSEL_DURATION = 4000
 /* ── Header ─────────────────────────────────── */
 function Header({ currentPage, setCurrentPage }) {
   const { cartCount } = useCart()
+  const { user, login, logout } = useAuth()
 
   const goHome = (e) => {
     if (e) e.preventDefault()
@@ -79,13 +66,21 @@ function Header({ currentPage, setCurrentPage }) {
     window.scrollTo({ top: 0 })
   }
 
+  const goOrders = (e) => {
+    if (e) e.preventDefault()
+    window.location.hash = '#/orders'
+    setCurrentPage('orders')
+    window.scrollTo({ top: 0 })
+  }
+
   return (
+    <>
     <header className="site-header" id="site-header">
       <a href="#/" className="site-logo" onClick={goHome} style={{ cursor: 'pointer' }}>Veggies Kitchen</a>
       
       <nav className="site-nav">
         <a href="#/menu" className={currentPage === 'menu' ? 'active' : ''} onClick={goMenu}>Menu</a>
-        <a href="#/orders" className={currentPage === 'orders' ? 'active' : ''}>Orders</a>
+        <a href="#/orders" className={currentPage === 'orders' ? 'active' : ''} onClick={goOrders}>Orders</a>
         <a href="#/blogs" className={currentPage === 'blogs' ? 'active' : ''} onClick={(e) => { e.preventDefault(); window.location.hash = '#/blogs'; setCurrentPage('blogs'); window.scrollTo({ top: 0 }) }}>Blogs</a>
         <a href="#/checkout" className={currentPage === 'checkout' ? 'active' : ''} onClick={goCheckout} style={{ position: 'relative' }}>
           Cart
@@ -104,13 +99,64 @@ function Header({ currentPage, setCurrentPage }) {
             <span className="material-symbols-outlined">search</span>
           </button>
         )}
+        
+        {user ? (
+          <div className="user-profile-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px', background: 'var(--surface-container)', padding: '6px 12px', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>account_circle</span>
+            <span style={{ fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap' }}>{user.name.split(' ')[0]}</span>
+            <button onClick={logout} className="btn-ghost-sm" style={{ padding: '4px', minWidth: 0, border: 'none', color: 'var(--error)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>logout</span>
+            </button>
+          </div>
+        ) : (
+          <button onClick={login} className="btn-primary-sm" style={{ marginLeft: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>login</span> Login
+          </button>
+        )}
       </div>
     </header>
+    <nav className="mobile-bottom-nav">
+      <a href="#/" className={currentPage === 'home' ? 'active' : ''} onClick={goHome}>
+        <span className="material-symbols-outlined">home</span>
+        <span>Home</span>
+      </a>
+      <a href="#/menu" className={currentPage === 'menu' ? 'active' : ''} onClick={goMenu}>
+        <span className="material-symbols-outlined">restaurant_menu</span>
+        <span>Menu</span>
+      </a>
+      <a href="#/checkout" className={currentPage === 'checkout' ? 'active' : ''} onClick={goCheckout} style={{ position: 'relative' }}>
+        <span className="material-symbols-outlined">shopping_cart</span>
+        <span>Cart</span>
+        {cartCount > 0 && (
+          <span className="mobile-cart-badge">{cartCount}</span>
+        )}
+      </a>
+      <a href="#/orders" className={currentPage === 'orders' ? 'active' : ''} onClick={goOrders}>
+        <span className="material-symbols-outlined">receipt_long</span>
+        <span>Orders</span>
+      </a>
+      <a href="#/account" className={currentPage === 'account' ? 'active' : ''} onClick={goAccount}>
+        <span className="material-symbols-outlined">account_circle</span>
+        <span>Account</span>
+      </a>
+    </nav>
+    </>
   )
 }
 
 /* ── Hero ────────────────────────────────────── */
 function Hero() {
+  const { heroBackdrop, menuSections } = useAdmin()
+  const allItems = menuSections.flatMap(s => s.items)
+  const featuredItemsFromData = allItems.filter(i => i.featured && i.image).slice(0, 3)
+  const FEATURED_DISHES = featuredItemsFromData.length > 0 ? featuredItemsFromData.map(i => ({
+    title: i.name,
+    desc: i.description,
+    img: i.image,
+  })) : [
+    { title: 'Dal Makhani', desc: 'Slow cooked', img: IMG.dalMakhani }
+  ]
+
   const [chefChoiceIndex, setChefChoiceIndex] = useState(0)
   const [fading, setFading] = useState(false)
 
@@ -123,14 +169,14 @@ function Hero() {
       }, 500)
     }, 4000)
     return () => clearInterval(timer)
-  }, [])
+  }, [FEATURED_DISHES.length])
 
-  const currentChoice = FEATURED_DISHES[chefChoiceIndex]
+  const currentChoice = FEATURED_DISHES[chefChoiceIndex] || FEATURED_DISHES[0]
 
   return (
     <section className="hero" id="home" style={{ position: 'relative' }}>
       <div className="hero-bg">
-        <img src={IMG.hero} alt="Artisanal Plant-Based Cuisine" />
+        <BackgroundMedia media={heroBackdrop} />
         <div className="hero-overlay" />
       </div>
 
@@ -163,9 +209,6 @@ function Hero() {
             <a href="#menu" className="btn-primary-lg glow-button">
               Explore Menu{' '}
               <span className="material-symbols-outlined">arrow_forward</span>
-            </a>
-            <a href="#story" className="btn-ghost">
-              Our Heritage
             </a>
           </div>
         </div>
@@ -255,12 +298,23 @@ function CinematicShowcase() {
 
 /* ── Featured Carousel ──────────────────────── */
 function FeaturedCarousel() {
+  const { menuSections } = useAdmin()
+  const allItems = menuSections.flatMap(s => s.items)
+  const featuredItemsFromData = allItems.filter(i => i.featured && i.image).slice(0, 3)
+  const FEATURED_DISHES = featuredItemsFromData.length > 0 ? featuredItemsFromData.map(i => ({
+    title: i.name,
+    desc: i.description,
+    img: i.image,
+  })) : [
+    { title: 'Dal Makhani', desc: 'Slow cooked', img: IMG.dalMakhani }
+  ]
+
   const [index, setIndex] = useState(0)
   const [fading, setFading] = useState(false)
   const progressRef = useRef(null)
   const timerRef = useRef(null)
 
-  const dish = FEATURED_DISHES[index]
+  const dish = FEATURED_DISHES[index] || FEATURED_DISHES[0]
 
   const resetProgress = useCallback(() => {
     const bar = progressRef.current
@@ -371,6 +425,7 @@ function FeaturedCarousel() {
 
 /* ── Menu Highlights ────────────────────────── */
 function MenuHighlights({ onViewFullMenu }) {
+  const { menuSections } = useAdmin()
   return (
     <section className="menu-section scroll-reveal" id="menu">
       <div className="menu-header">
@@ -391,7 +446,7 @@ function MenuHighlights({ onViewFullMenu }) {
       </div>
 
       <div className="menu-categories">
-        {MENU_SECTIONS.slice(4, 8).map((cat) => (
+        {menuSections.slice(4, 8).map((cat) => (
           <div key={cat.name} className="menu-category-card glass-panel fluid-card">
             <div className="menu-category-header">
               <div className="menu-category-icon">
@@ -412,7 +467,7 @@ function MenuHighlights({ onViewFullMenu }) {
       </div>
 
       {/* Combos */}
-      {MENU_SECTIONS.find(s => s.id === 'combos') && (
+      {menuSections.find(s => s.id === 'combos') && (
         <div className="combos-banner" id="combos">
           <div className="section-header" style={{ marginBottom: '32px' }}>
             <h2 className="text-headline-lg" style={{ fontSize: '32px' }}>
@@ -421,7 +476,7 @@ function MenuHighlights({ onViewFullMenu }) {
             <div className="section-divider" />
           </div>
           <div className="combos-inner">
-            {MENU_SECTIONS.find(s => s.id === 'combos').items.slice(0, 6).map((combo) => (
+            {menuSections.find(s => s.id === 'combos').items.slice(0, 6).map((combo) => (
               <div key={combo.name} className="combo-chip">
                 <div>
                   <div className="combo-chip-name">{combo.name}</div>
@@ -558,11 +613,15 @@ function Footer() {
 import { CartProvider, useCart } from './CartContext'
 import { LocationProvider } from './LocationContext'
 import { BlogProvider } from './BlogContext'
+import { AdminProvider, useAdmin, BackgroundMedia } from './AdminContext'
+import { AuthProvider, useAuth } from './AuthContext'
 import CheckoutPage from './CheckoutPage'
 import AccountPage from './AccountPage'
 import PrivacyPolicy from './PrivacyPolicy'
 import BlogsPage from './BlogsPage'
 import WriteBlogPage from './WriteBlogPage'
+import AdminDashboard from './AdminDashboard'
+import OrdersPage from './OrdersPage'
 
 export default function App() {
   /* ── Hash-based routing ─────────────────── */
@@ -572,11 +631,13 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash
       if (hash === '#/menu') setCurrentPage('menu')
+      else if (hash === '#/orders') setCurrentPage('orders')
       else if (hash === '#/checkout') setCurrentPage('checkout')
       else if (hash === '#/account') setCurrentPage('account')
       else if (hash === '#/privacy') setCurrentPage('privacy')
       else if (hash === '#/blogs') setCurrentPage('blogs')
       else if (hash === '#/write-blog') setCurrentPage('write-blog')
+      else if (hash === '#/admin') setCurrentPage('admin')
       else if (hash === '#/' || hash === '') setCurrentPage('home')
     }
     window.addEventListener('hashchange', handleHashChange)
@@ -651,47 +712,63 @@ export default function App() {
   }
 
   return (
-    <BlogProvider>
-      <CartProvider>
-        <LocationProvider>
-          <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onAccountClick={goAccount} />
-        {currentPage === 'home' ? (
-          <main>
-            <Hero />
-            <CinematicShowcase />
-            <FeaturedCarousel />
-            <MenuHighlights onViewFullMenu={goMenu} />
-            <FarmToTandoor />
-            <CTABanner />
-          </main>
-        ) : currentPage === 'menu' ? (
-          <main>
-            <MenuPage />
-          </main>
-        ) : currentPage === 'account' ? (
-          <main>
-            <AccountPage />
-          </main>
-        ) : currentPage === 'privacy' ? (
-          <main>
-            <PrivacyPolicy />
-          </main>
-        ) : currentPage === 'blogs' ? (
-          <main>
-            <BlogsPage />
-          </main>
-        ) : currentPage === 'write-blog' ? (
-          <main>
-            <WriteBlogPage />
-          </main>
-        ) : (
-          <main>
-            <CheckoutPage />
-          </main>
-        )}
-        <Footer />
-      </LocationProvider>
-    </CartProvider>
-    </BlogProvider>
+    <AuthProvider>
+      <AdminProvider>
+        <BlogProvider>
+          <CartProvider>
+            <LocationProvider>
+            {currentPage !== 'admin' && <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onAccountClick={goAccount} />}
+          {currentPage === 'home' ? (
+            <main>
+              <Hero />
+              <CinematicShowcase />
+              <FeaturedCarousel />
+              <MenuHighlights onViewFullMenu={goMenu} />
+              <FarmToTandoor />
+              <CTABanner />
+            </main>
+          ) : currentPage === 'menu' ? (
+            <main>
+              <MenuPage />
+            </main>
+          ) : currentPage === 'account' ? (
+            <main>
+              <AccountPage />
+            </main>
+          ) : currentPage === 'privacy' ? (
+            <main>
+              <PrivacyPolicy />
+            </main>
+          ) : currentPage === 'blogs' ? (
+            <main>
+              <BlogsPage />
+            </main>
+          ) : currentPage === 'write-blog' ? (
+            <main>
+              <WriteBlogPage />
+            </main>
+          ) : currentPage === 'admin' ? (
+            <main>
+              <AdminDashboard />
+            </main>
+          ) : currentPage === 'orders' ? (
+            <main>
+              <OrdersPage />
+            </main>
+          ) : currentPage === 'checkout' ? (
+            <main>
+              <CheckoutPage />
+            </main>
+          ) : (
+            <main>
+              <Hero />
+            </main>
+          )}
+          {currentPage !== 'admin' && <Footer />}
+          </LocationProvider>
+        </CartProvider>
+        </BlogProvider>
+      </AdminProvider>
+    </AuthProvider>
   )
 }

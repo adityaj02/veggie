@@ -44,6 +44,10 @@ export function CartProvider({ children }) {
 
   const clearCart = useCallback(() => setCartItems([]), [])
 
+  const replaceCart = useCallback((items) => {
+    setCartItems(items)
+  }, [])
+
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0)
 
   const cartSubtotal = cartItems.reduce((acc, item) => {
@@ -63,6 +67,7 @@ export function CartProvider({ children }) {
       updateQuantity,
       removeFromCart,
       clearCart,
+      replaceCart,
       cartCount,
       cartSubtotal,
       taxes,

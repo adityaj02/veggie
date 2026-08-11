@@ -23,22 +23,31 @@ const INITIAL_BLOGS = [
 
 export function BlogProvider({ children }) {
   const [blogs, setBlogs] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        setBlogs(JSON.parse(saved))
-      } else {
+    async function fetchBlogs() {
+      try {
+        const res = await fetch('/api/blogs')
+        if (res.ok) {
+          const data = await res.json()
+          if (data && data.length > 0) {
+            setBlogs(data)
+          } else {
+            setBlogs(INITIAL_BLOGS)
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch blogs from API", err)
         setBlogs(INITIAL_BLOGS)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_BLOGS))
+      } finally {
+        setIsLoading(false)
       }
-    } catch (_e) {
-      setBlogs(INITIAL_BLOGS)
     }
+    fetchBlogs()
   }, [])
 
-  const addBlog = (title, author, content) => {
+  const addBlog = async (title, author, content) => {
     const newBlog = {
       id: `b_${Date.now()}`,
       title,
@@ -47,17 +56,40 @@ export function BlogProvider({ children }) {
       content
     }
     
-    const updatedBlogs = [newBlog, ...blogs]
-    setBlogs(updatedBlogs)
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedBlogs))
-    } catch (e) {
-      console.error('Failed to save blog to local storage', e)
+      const res = await fetch('/api/blogs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBlog)
+      })
+      if (res.ok) {
+        const savedBlog = await res.json()
+        setBlogs([savedBlog, ...blogs])
+      }
+    } catch (err) {
+      console.error('Failed to save blog to API', err)
+      // Fallback local update
+      setBlogs([newBlog, ...blogs])
+    }
+  }
+
+  const deleteBlog = async (id) => {
+    try {
+      const res = await fetch(`/api/blogs/${id}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        setBlogs(blogs.filter(b => b.id !== id))
+      }
+    } catch (err) {
+      console.error('Failed to delete blog from API', err)
+      // Fallback local update
+      setBlogs(blogs.filter(b => b.id !== id))
     }
   }
 
   return (
-    <BlogContext.Provider value={{ blogs, addBlog }}>
+    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog }}>
       {children}
     </BlogContext.Provider>
   )

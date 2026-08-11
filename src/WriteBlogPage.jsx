@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useBlogs } from './BlogContext'
+import { useAdmin, BackgroundMedia } from './AdminContext'
 import './Blogs.css'
 
 export default function WriteBlogPage() {
   const { addBlog } = useBlogs()
+  const { menuBackdrop } = useAdmin()
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [content, setContent] = useState('')
@@ -29,7 +31,11 @@ export default function WriteBlogPage() {
   }
 
   return (
-    <div className="write-blog-page">
+    <div className="write-blog-page" style={{ position: 'relative', minHeight: '100vh' }}>
+      <div className="page-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <BackgroundMedia media={menuBackdrop} />
+        <div className="page-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(20, 19, 19, 0.85)', backdropFilter: 'blur(12px)' }} />
+      </div>
       <header className="write-blog-header">
         <h1 className="write-blog-title">Write a Blog</h1>
       </header>

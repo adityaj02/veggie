@@ -7,32 +7,39 @@
 import { useState, useMemo } from 'react'
 import { useCart } from './CartContext'
 import { useLocation } from './LocationContext'
-import { MENU_SECTIONS, SECTION_EMOJI } from './menuData'
+import { SECTION_EMOJI } from './menuData'
 import { getRecommendations } from './recommendationEngine'
+import { useAdmin, BackgroundMedia } from './AdminContext'
+import { useAuth } from './AuthContext'
 import './CheckoutPage.css'
 
 /* ── Helpers ──────────────────────────────── */
 function validatePhone(phone) {
-  const digits = phone.replace(/\D/g, '')
+  if (!phone) return false
+  const digits = String(phone).replace(/\D/g, '')
   return digits.length === 10
 }
 
 function validatePincode(pin) {
-  return /^\d{6}$/.test(pin)
+  if (!pin) return false
+  return /^\d{6}$/.test(String(pin))
 }
 
 /* ── Checkout Page ────────────────────────── */
 export default function CheckoutPage() {
   const {
-    cartItems, updateQuantity, removeFromCart, addToCart,
+    cartItems, updateQuantity, removeFromCart, addToCart, clearCart,
     cartSubtotal, taxes, delivery, cartTotal, cartCount
   } = useCart()
+
+  const { menuSections, menuBackdrop } = useAdmin()
 
   const { address, locationStatus, detectLocation } = useLocation()
 
   /* ── Delivery form state ────────────── */
   const [deliveryForm, setDeliveryForm] = useState({
     name: '',
+    email: '',
     phone: '',
     street: address.street || '',
     city: address.city || '',
@@ -41,17 +48,31 @@ export default function CheckoutPage() {
     instructions: '',
   })
 
-  // Sync location context into form when detected
+  const { user } = useAuth()
+
+  // Sync location context and user profile into form
   useState(() => {
-    if (address.street || address.city) {
-      setDeliveryForm(prev => ({
-        ...prev,
-        street: prev.street || address.street,
-        city: prev.city || address.city,
-        state: prev.state || address.state,
-        pincode: prev.pincode || address.pincode,
-      }))
+    let initialForm = {
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      street: address.street || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || '',
     }
+
+    if (user && user.addresses && user.addresses.length > 0) {
+      initialForm.street = user.addresses[0].street || address.street
+      initialForm.city = user.addresses[0].city || address.city
+      initialForm.state = user.addresses[0].state || address.state
+      initialForm.pincode = user.addresses[0].pincode || address.pincode
+    }
+
+    setDeliveryForm(prev => ({
+      ...prev,
+      ...initialForm
+    }))
   })
 
   const updateField = (field, value) => {
@@ -65,6 +86,7 @@ export default function CheckoutPage() {
   const [orderForOther, setOrderForOther] = useState(false)
   const [recipientForm, setRecipientForm] = useState({
     name: '',
+    email: '',
     phone: '',
     street: '',
     city: '',
@@ -79,8 +101,8 @@ export default function CheckoutPage() {
 
   /* ── Recommendations ────────────────── */
   const recommendations = useMemo(
-    () => getRecommendations(cartItems, MENU_SECTIONS, 4),
-    [cartItems]
+    () => getRecommendations(cartItems, menuSections, 4),
+    [cartItems, menuSections]
   )
 
   /* ── Validation ─────────────────────── */
@@ -88,6 +110,7 @@ export default function CheckoutPage() {
   const isFormValid = useMemo(() => {
     const f = activeForm
     if (!f.name.trim()) return false
+    if (!f.email.trim() || !f.email.includes('@')) return false
     if (!validatePhone(f.phone)) return false
     if (!f.street.trim()) return false
     if (!f.city.trim()) return false
@@ -97,16 +120,87 @@ export default function CheckoutPage() {
 
   /* ── Place order ────────────────────── */
   const [orderPlaced, setOrderPlaced] = useState(false)
+  const [isPlacing, setIsPlacing] = useState(false)
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!isFormValid) return
-    setOrderPlaced(true)
-    setTimeout(() => setOrderPlaced(false), 3000)
+    setIsPlacing(true)
+    
+    try {
+      const orderPayload = {
+        isGuest: !orderForOther, // If orderForOther is false and we have no user context, we rely on the backend to set user if authenticated
+        customerName: activeForm.name,
+        customerEmail: activeForm.email,
+        customerPhone: activeForm.phone,
+        deliveryAddress: {
+          street: activeForm.street,
+          city: activeForm.city,
+          state: activeForm.state,
+          pincode: activeForm.pincode
+        },
+        items: cartItems,
+        subtotal: cartSubtotal,
+        taxes: taxes,
+        deliveryFee: delivery,
+        total: cartTotal,
+        deliveryTime: deliveryTime,
+        instructions: activeForm.instructions
+      }
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      })
+
+      if (res.ok) {
+        const orderData = await res.json()
+        
+        let message = `Hi Veggie Kitchen! 🥦\n\nI have just placed a new order from your website! Here are my details:\n\n`
+        message += `*Order ID:* #${orderData._id.slice(-6).toUpperCase()}\n`
+        message += `*Name:* ${activeForm.name}\n`
+        if (activeForm.email) message += `*Email:* ${activeForm.email}\n`
+        message += `*Contact Number:* ${activeForm.phone}\n`
+        message += `*Delivery Address:* ${activeForm.street}, ${activeForm.city}, ${activeForm.state} - ${activeForm.pincode}\n`
+        message += `*Delivery Time:* ${deliveryTime}\n\n`
+        
+        message += `*Order Summary:*\n`
+        cartItems.forEach(item => {
+          message += `${item.quantity}x ${item.name} - ₹${item.price}\n`
+        })
+        
+        message += `\n*Total Amount:* ₹${cartTotal.toFixed(2)}\n\n`
+        message += `Please confirm my order!`
+
+        const whatsappUrl = `https://api.whatsapp.com/send/?phone=919811797407&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`
+        
+        setOrderPlaced(true)
+        clearCart()
+        window.location.href = whatsappUrl
+      } else {
+        alert("Failed to place order.")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error connecting to server.")
+    } finally {
+      setIsPlacing(false)
+    }
   }
 
   /* ── Render ─────────────────────────── */
   return (
-    <div className="checkout-page">
+    <div className="checkout-page" style={{ position: 'relative', minHeight: '100vh' }}>
+      {/* ── Fixed Video Background ── */}
+      <div className="page-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <BackgroundMedia media={menuBackdrop} /> 
+        <div className="page-overlay" style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'rgba(20, 19, 19, 0.85)', 
+          backdropFilter: 'blur(12px)' 
+        }} />
+      </div>
       {/* ── Page Title ── */}
       <div className="co-title-wrap">
         <h1 className="co-title text-headline-lg">Checkout</h1>
@@ -227,6 +321,14 @@ export default function CheckoutPage() {
                 )}
               </h2>
 
+              <div className="payment-method-container" style={{ marginTop: '24px', padding: '16px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--outline-variant)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span className="material-symbols-outlined text-secondary">payments</span>
+                  <h3 className="text-body-lg text-primary font-semibold">Payment Method</h3>
+                </div>
+                <p className="text-body-md text-on-surface-variant">Cash on Delivery (COD) is selected by default.</p>
+              </div>
+
               {/* Delivery time */}
               <div className="co-time-row">
                 <button
@@ -280,6 +382,25 @@ export default function CheckoutPage() {
                       onChange={(e) => orderForOther ? updateRecipient('name', e.target.value) : updateField('name', e.target.value)}
                     />
                   </div>
+                </div>
+
+                {/* Email */}
+                <div className="co-field">
+                  <label className="co-field-label">Email Address</label>
+                  <div className="co-input-wrap">
+                    <span className="material-symbols-outlined co-input-icon">mail</span>
+                    <input
+                      className="co-input"
+                      type="email"
+                      placeholder="For order confirmation"
+                      value={orderForOther ? recipientForm.email : deliveryForm.email}
+                      onChange={(e) => orderForOther ? updateRecipient('email', e.target.value) : updateField('email', e.target.value)}
+                    />
+                  </div>
+                  {(orderForOther ? recipientForm.email : deliveryForm.email).length > 0 &&
+                    !(orderForOther ? recipientForm.email : deliveryForm.email).includes('@') && (
+                    <span className="co-field-error">Enter a valid email address</span>
+                  )}
                 </div>
 
                 {/* Phone */}
@@ -413,10 +534,12 @@ export default function CheckoutPage() {
 
               <button
                 className={`co-place-order-btn glow-button ${orderPlaced ? 'co-order-success' : ''}`}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isPlacing}
                 onClick={handlePlaceOrder}
               >
-                {orderPlaced ? (
+                {isPlacing ? (
+                  "Placing Order..."
+                ) : orderPlaced ? (
                   <>
                     <span className="material-symbols-outlined">check_circle</span>
                     Order Placed!
