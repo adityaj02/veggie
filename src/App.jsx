@@ -339,10 +339,11 @@ function FeaturedCarousel() {
   }, [])
 
   useEffect(() => {
+    if (FEATURED_DISHES.length <= 1) return
     resetProgress()
     timerRef.current = setInterval(advance, CAROUSEL_DURATION)
     return () => clearInterval(timerRef.current)
-  }, [advance, resetProgress])
+  }, [advance, resetProgress, FEATURED_DISHES.length])
 
   // Reset progress bar when index changes
   useEffect(() => {
@@ -359,9 +360,11 @@ function FeaturedCarousel() {
               alt={dish.title}
               style={{ opacity: fading ? 0 : 1 }}
             />
-            <div className="progress-bar-track">
-              <div className="progress-bar-fill" ref={progressRef} />
-            </div>
+            {FEATURED_DISHES.length > 1 && (
+              <div className="progress-bar-track">
+                <div className="progress-bar-fill" ref={progressRef} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -401,24 +404,26 @@ function FeaturedCarousel() {
             >
               Menu
             </a>
-            <div className="carousel-dots">
-              {FEATURED_DISHES.map((_, i) => (
-                <button
-                  key={i}
-                  className={`carousel-dot ${i === index ? 'active' : ''}`}
-                  onClick={() => {
-                    clearInterval(timerRef.current)
-                    setFading(true)
-                    setTimeout(() => {
-                      setIndex(i)
-                      setFading(false)
-                      timerRef.current = setInterval(advance, CAROUSEL_DURATION)
-                    }, 400)
-                  }}
-                  aria-label={`View ${FEATURED_DISHES[i].title}`}
-                />
-              ))}
-            </div>
+            {FEATURED_DISHES.length > 1 && (
+              <div className="carousel-dots">
+                {FEATURED_DISHES.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`carousel-dot ${i === index ? 'active' : ''}`}
+                    onClick={() => {
+                      clearInterval(timerRef.current)
+                      setFading(true)
+                      setTimeout(() => {
+                        setIndex(i)
+                        setFading(false)
+                        timerRef.current = setInterval(advance, CAROUSEL_DURATION)
+                      }, 400)
+                    }}
+                    aria-label={`View ${FEATURED_DISHES[i].title}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
