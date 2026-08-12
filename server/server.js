@@ -50,14 +50,23 @@ mongoose.connect(process.env.MONGODB_URI)
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Auth Routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+app.get('/auth/google', (req, res, next) => {
+  // Pass the returnTo path through OAuth state so we can redirect back after login
+  const returnTo = req.query.returnTo || '#/';
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    state: returnTo
+  })(req, res, next);
+});
 
 app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: `${FRONTEND_URL}/#/checkout` }),
+  passport.authenticate('google', { failureRedirect: `${FRONTEND_URL}/#/account` }),
   async (req, res) => {
     // Log Activity
     await ActivityLog.create({ action: 'User Logged In', user: req.user._id, details: { name: req.user.name } });
-    res.redirect(`${FRONTEND_URL}/#/checkout`);
+    // Redirect to the page the user was on before login
+    const returnTo = req.query.state || '#/';
+    res.redirect(`${FRONTEND_URL}/${returnTo}`);
   }
 );
 

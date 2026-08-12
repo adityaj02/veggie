@@ -27,10 +27,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = () => {
-    // Redirect to backend OAuth route
-    // Fallback to localhost if API_BASE is not configured
+    // Save the current hash so the user returns to the same page after login
+    const currentHash = window.location.hash || '#/';
     const backendUrl = API_BASE || 'http://localhost:5000';
-    window.location.href = `${backendUrl}/auth/google`;
+    window.location.href = `${backendUrl}/auth/google?returnTo=${encodeURIComponent(currentHash)}`;
   };
 
   const logout = async () => {

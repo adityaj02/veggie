@@ -17,7 +17,7 @@ export default function OrdersPage() {
   const fetchOrders = () => {
     if (user) {
       setIsLoading(true);
-      fetch(`${API_BASE}/api/orders/me`)
+      fetch(`${API_BASE}/api/orders/me`, { credentials: 'include' })
         .then(r => r.json())
         .then(data => setOrders(Array.isArray(data) ? data : []))
         .catch(console.error)
@@ -32,7 +32,7 @@ export default function OrdersPage() {
   const cancelOrder = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT', credentials: 'include' });
       if (res.ok) {
         const orderData = await res.json();
         fetchOrders();

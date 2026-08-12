@@ -20,7 +20,7 @@ export default function AccountPage() {
   useEffect(() => {
     if (user) {
       setIsLoadingOrders(true)
-      fetch(`${API_BASE}/api/orders/me`)
+      fetch(`${API_BASE}/api/orders/me`, { credentials: 'include' })
         .then(r => r.json())
         .then(data => setOrders(Array.isArray(data) ? data : []))
         .catch(console.error)

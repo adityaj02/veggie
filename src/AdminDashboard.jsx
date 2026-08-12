@@ -254,7 +254,7 @@ function AdminOrders() {
   const [orders, setOrders] = useState([])
   
   useEffect(() => {
-    fetch(`${API_BASE}/api/orders`).then(r => r.json()).then(setOrders).catch(console.error)
+    fetch(`${API_BASE}/api/orders`, { credentials: 'include' }).then(r => r.json()).then(setOrders).catch(console.error)
   }, [])
 
   const updateStatus = async (id, status) => {
@@ -262,6 +262,7 @@ function AdminOrders() {
       const res = await fetch(`${API_BASE}/api/orders/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ status })
       })
       if (res.ok) {
@@ -276,7 +277,7 @@ function AdminOrders() {
   const cancelOrder = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this order? An email will be sent to the customer.")) return
     try {
-      const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT' })
+      const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT', credentials: 'include' })
       if (res.ok) {
         const updated = await res.json()
         setOrders(orders.map(o => o._id === id ? updated : o))
@@ -349,7 +350,7 @@ function AdminActivity() {
   const [logs, setLogs] = useState([])
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/activity`).then(r => r.json()).then(setLogs).catch(console.error)
+    fetch(`${API_BASE}/api/activity`, { credentials: 'include' }).then(r => r.json()).then(setLogs).catch(console.error)
   }, [])
 
   return (
