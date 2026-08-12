@@ -31,7 +31,7 @@ export function BlogProvider({ children }) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 3000)
       try {
-        const res = await fetch(`${API_BASE}/api/blogs`, { signal: controller.signal })
+        const res = await fetch(`${API_BASE}/api/blogs`, { signal: controller.signal, cache: 'no-store' })
         clearTimeout(timeout)
         if (res.ok) {
           const data = await res.json()

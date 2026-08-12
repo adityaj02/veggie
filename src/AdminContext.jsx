@@ -18,8 +18,8 @@ export function AdminProvider({ children }) {
       const timeout = setTimeout(() => controller.abort(), 3000) // 3s timeout
       try {
         const [settingsRes, menuRes] = await Promise.all([
-          fetch(`${API_BASE}/api/settings`, { signal: controller.signal }),
-          fetch(`${API_BASE}/api/menu`, { signal: controller.signal })
+          fetch(`${API_BASE}/api/settings`, { signal: controller.signal, cache: 'no-store' }),
+          fetch(`${API_BASE}/api/menu`, { signal: controller.signal, cache: 'no-store' })
         ])
         clearTimeout(timeout)
         

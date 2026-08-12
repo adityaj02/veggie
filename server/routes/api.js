@@ -199,6 +199,7 @@ router.put('/orders/:id/cancel', async (req, res) => {
 
 // --- Site Settings ---
 router.get('/settings', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   try {
     const settings = await SiteSettings.find();
     res.json(settings);
@@ -223,6 +224,7 @@ router.put('/settings/:key', isAdmin, async (req, res) => {
 
 // --- Menu ---
 router.get('/menu', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   try {
     const menu = await MenuCategory.find();
     res.json(menu);
@@ -265,8 +267,8 @@ router.delete('/menu/:id', isAdmin, async (req, res) => {
 
 // --- Blogs ---
 router.get('/blogs', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   try {
-    // Sort by newest first
     const blogs = await Blog.find().sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
@@ -318,7 +320,8 @@ router.post('/seed', isAdmin, async (req, res) => {
     
     res.json({ success: true, message: 'Database seeded successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('SEED ERROR:', err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 
