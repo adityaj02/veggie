@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAdmin } from './AdminContext'
 import { useBlogs } from './BlogContext'
+import { useAuth } from './AuthContext'
 import { API_BASE } from './config'
 import './AdminDashboard.css'
 
@@ -18,6 +19,20 @@ export default function AdminDashboard() {
 
   const [activeTab, setActiveTab] = useState('settings')
   const [pushing, setPushing] = useState(false)
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <div style={{padding: '100px', textAlign: 'center'}}>Loading...</div>
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div style={{padding: '100px', textAlign: 'center'}}>
+        <h2>Access Denied</h2>
+        <p>You do not have permission to view this page.</p>
+      </div>
+    )
+  }
 
   const handlePushChanges = async () => {
     setPushing(true)

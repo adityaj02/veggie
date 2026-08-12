@@ -759,7 +759,7 @@ export default function App() {
             </main>
           ) : currentPage === 'admin' ? (
             <main>
-              {user?.role === 'admin' ? <AdminDashboard /> : <div style={{padding: '100px', textAlign: 'center'}}><h2>Access Denied</h2><p>You do not have permission to view this page.</p></div>}
+              <AdminDashboard />
             </main>
           ) : currentPage === 'orders' ? (
             <main>
