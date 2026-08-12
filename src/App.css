@@ -600,6 +600,15 @@
   font-size: 15px;
 }
 
+.menu-category-card:only-child {
+  grid-column: 1 / -1;
+}
+.menu-category-card:only-child .menu-items-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  column-gap: 48px;
+}
+
 .menu-item-price {
   color: var(--secondary);
   font-weight: 600;
