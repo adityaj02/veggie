@@ -180,7 +180,7 @@ function Hero() {
         <div className="hero-overlay" />
       </div>
 
-      <div className="hero-signature" style={{ position: 'absolute', bottom: '40px', right: '40px', zIndex: 10 }}>
+      <div className="hero-signature">
         <div className="hero-signature-card glass-panel" style={{ transition: 'opacity 0.5s ease', opacity: fading ? 0 : 1, textAlign: 'right' }}>
           <p className="hero-signature-label">Signature Chef Choice</p>
           <h3 className="hero-signature-title">{currentChoice.title}</h3>
