@@ -454,7 +454,10 @@ function MenuHighlights({ onViewFullMenu }) {
       </div>
 
       <div className="menu-categories">
-        {menuSections.slice(4, 8).map((cat) => (
+        {menuSections
+          .filter(cat => cat.items && cat.items.length > 0)
+          .slice(0, 4)
+          .map((cat) => (
           <div key={cat.name} className="menu-category-card glass-panel fluid-card">
             <div className="menu-category-header">
               <div className="menu-category-icon">
