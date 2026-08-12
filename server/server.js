@@ -28,15 +28,22 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
+const MongoStore = require('connect-mongo');
+
 // Setup Sessions
 app.use(session({
   secret: process.env.SESSION_SECRET || 'veggies_kitchen_super_secret_session_key',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions'
+  }),
   cookie: {
     secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    httpOnly: true
+    sameSite: 'lax',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   }
 }));
 

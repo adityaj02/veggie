@@ -29,8 +29,7 @@ export function AuthProvider({ children }) {
   const login = () => {
     // Save the current hash so the user returns to the same page after login
     const currentHash = window.location.hash || '#/';
-    const backendUrl = API_BASE || 'http://localhost:5000';
-    window.location.href = `${backendUrl}/auth/google?returnTo=${encodeURIComponent(currentHash)}`;
+    window.location.href = `/auth/google?returnTo=${encodeURIComponent(currentHash)}`;
   };
 
   const logout = async () => {

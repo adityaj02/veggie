@@ -1,4 +1,5 @@
 // Configuration for API requests
-// In production, set the environment variable VITE_API_BASE_URL to your Render backend URL
-// Example: VITE_API_BASE_URL=https://veggie-kitchen-backend.onrender.com
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+// In development, Vite proxy handles this.
+// In production, Vercel rewrites handle this.
+// Therefore, API requests are always made relative to the current origin.
+export const API_BASE = '';
