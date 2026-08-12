@@ -24,6 +24,10 @@ passport.use(new GoogleStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
+      const adminEmails = ['adityajmarch020304@gmail.com', 'shivskukreja@gmail.com'];
+      const userEmail = profile.emails[0].value.toLowerCase();
+      const userRole = adminEmails.includes(userEmail) ? 'admin' : 'user';
+
       // Check if user exists
       let user = await User.findOne({ googleId: profile.id });
       
@@ -33,9 +37,14 @@ passport.use(new GoogleStrategy({
           googleId: profile.id,
           name: profile.displayName,
           email: profile.emails[0].value,
-          // First user could be made admin manually, or we just default to 'user'
-          role: 'user'
+          role: userRole
         });
+      } else {
+        // Ensure role is up-to-date
+        if (user.role !== userRole) {
+          user.role = userRole;
+          await user.save();
+        }
       }
       return done(null, user);
     } catch (err) {

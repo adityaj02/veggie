@@ -82,6 +82,9 @@ function Header({ currentPage, setCurrentPage }) {
         <a href="#/menu" className={currentPage === 'menu' ? 'active' : ''} onClick={goMenu}>Menu</a>
         <a href="#/orders" className={currentPage === 'orders' ? 'active' : ''} onClick={goOrders}>Orders</a>
         <a href="#/blogs" className={currentPage === 'blogs' ? 'active' : ''} onClick={(e) => { e.preventDefault(); window.location.hash = '#/blogs'; setCurrentPage('blogs'); window.scrollTo({ top: 0 }) }}>Blogs</a>
+        {user?.role === 'admin' && (
+          <a href="#/admin" className={currentPage === 'admin' ? 'active' : ''} onClick={(e) => { e.preventDefault(); window.location.hash = '#/admin'; setCurrentPage('admin'); window.scrollTo({ top: 0 }) }}>Admin</a>
+        )}
         <a href="#/checkout" className={currentPage === 'checkout' ? 'active' : ''} onClick={goCheckout} style={{ position: 'relative' }}>
           Cart
           {cartCount > 0 && (
@@ -756,7 +759,7 @@ export default function App() {
             </main>
           ) : currentPage === 'admin' ? (
             <main>
-              <AdminDashboard />
+              {user?.role === 'admin' ? <AdminDashboard /> : <div style={{padding: '100px', textAlign: 'center'}}><h2>Access Denied</h2><p>You do not have permission to view this page.</p></div>}
             </main>
           ) : currentPage === 'orders' ? (
             <main>

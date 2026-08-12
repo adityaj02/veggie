@@ -25,6 +25,14 @@ const sendOrderEmail = async (toEmail, toName, subject, htmlPart) => {
   }
 };
 
+// --- Middleware ---
+const isAdmin = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Admin access required' });
+};
+
 // --- Auth ---
 router.get('/auth/me', (req, res) => {
   if (req.isAuthenticated()) {
@@ -131,7 +139,7 @@ router.post('/orders', async (req, res) => {
   }
 });
 
-router.put('/orders/:id/status', async (req, res) => {
+router.put('/orders/:id/status', isAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
@@ -199,7 +207,7 @@ router.get('/settings', async (req, res) => {
   }
 });
 
-router.put('/settings/:key', async (req, res) => {
+router.put('/settings/:key', isAdmin, async (req, res) => {
   try {
     const { value } = req.body;
     const setting = await SiteSettings.findOneAndUpdate(
@@ -223,7 +231,7 @@ router.get('/menu', async (req, res) => {
   }
 });
 
-router.post('/menu', async (req, res) => {
+router.post('/menu', isAdmin, async (req, res) => {
   try {
     const category = new MenuCategory(req.body);
     await category.save();
@@ -233,7 +241,7 @@ router.post('/menu', async (req, res) => {
   }
 });
 
-router.put('/menu/:id', async (req, res) => {
+router.put('/menu/:id', isAdmin, async (req, res) => {
   try {
     const category = await MenuCategory.findOneAndUpdate(
       { id: req.params.id },
@@ -246,7 +254,7 @@ router.put('/menu/:id', async (req, res) => {
   }
 });
 
-router.delete('/menu/:id', async (req, res) => {
+router.delete('/menu/:id', isAdmin, async (req, res) => {
   try {
     await MenuCategory.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
@@ -266,7 +274,7 @@ router.get('/blogs', async (req, res) => {
   }
 });
 
-router.post('/blogs', async (req, res) => {
+router.post('/blogs', isAdmin, async (req, res) => {
   try {
     const blog = new Blog(req.body);
     await blog.save();
@@ -276,7 +284,7 @@ router.post('/blogs', async (req, res) => {
   }
 });
 
-router.delete('/blogs/:id', async (req, res) => {
+router.delete('/blogs/:id', isAdmin, async (req, res) => {
   try {
     await Blog.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
@@ -286,7 +294,7 @@ router.delete('/blogs/:id', async (req, res) => {
 });
 
 // --- Initial Seed Route (for convenience) ---
-router.post('/seed', async (req, res) => {
+router.post('/seed', isAdmin, async (req, res) => {
   try {
     const { menuData, blogsData, heroBackdrop, menuBackdrop } = req.body;
     
