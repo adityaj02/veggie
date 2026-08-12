@@ -25,10 +25,26 @@ export function AdminProvider({ children }) {
         
         if (settingsRes.ok) {
           const settings = await settingsRes.json()
+          
+          const sanitizeUrl = (url) => {
+            if (!url) return url;
+            let cleaned = url.replace(/\\/g, '/'); // Windows backslashes
+            if (cleaned.includes('public/images/')) cleaned = cleaned.replace('public/images/', '/images/');
+            if (cleaned.includes('veggie-cyan.vercel.app/public')) cleaned = cleaned.replace(/https?:\/\/veggie-cyan\.vercel\.app\/public/, '');
+            return cleaned;
+          };
+
           const hero = settings.find(s => s.key === 'heroBackdrop')
           const menuBg = settings.find(s => s.key === 'menuBackdrop')
-          if (hero) setHeroBackdrop(hero.value)
-          if (menuBg) setMenuBackdrop(menuBg.value)
+          
+          if (hero && hero.value) {
+            hero.value.url = sanitizeUrl(hero.value.url);
+            setHeroBackdrop(hero.value);
+          }
+          if (menuBg && menuBg.value) {
+            menuBg.value.url = sanitizeUrl(menuBg.value.url);
+            setMenuBackdrop(menuBg.value);
+          }
         }
         
         if (menuRes.ok) {
