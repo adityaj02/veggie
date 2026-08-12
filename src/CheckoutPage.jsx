@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   VEGGIES KITCHEN — Checkout Page
-   Uses the Global Navigation Bar (no duplicate nav).
-   Features: cart items, recommendations, delivery form,
-   contact number, "Order for Someone Else", bill summary.
-   ═══════════════════════════════════════════════════════════ */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCart } from './CartContext'
 import { useLocation } from './LocationContext'
 import { SECTION_EMOJI } from './menuData'
@@ -42,39 +36,47 @@ export default function CheckoutPage() {
     name: '',
     email: '',
     phone: '',
-    street: address.street || '',
-    city: address.city || '',
-    state: address.state || '',
-    pincode: address.pincode || '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
     instructions: '',
   })
 
   const { user } = useAuth()
 
-  // Sync location context and user profile into form
-  useState(() => {
-    let initialForm = {
-      name: user?.name || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      street: address.street || '',
-      city: address.city || '',
-      state: address.state || '',
-      pincode: address.pincode || '',
-    }
+  // Sync location context and user profile into form when they become available
+  useEffect(() => {
+    setDeliveryForm(prev => {
+      const updates = {}
 
-    if (user && user.addresses && user.addresses.length > 0) {
-      initialForm.street = user.addresses[0].street || address.street
-      initialForm.city = user.addresses[0].city || address.city
-      initialForm.state = user.addresses[0].state || address.state
-      initialForm.pincode = user.addresses[0].pincode || address.pincode
-    }
+      // Sync user info (name, email, phone) if form fields are still empty
+      if (user) {
+        if (!prev.name && user.name) updates.name = user.name
+        if (!prev.email && user.email) updates.email = user.email
+        if (!prev.phone && user.phone) updates.phone = user.phone
+      }
 
-    setDeliveryForm(prev => ({
-      ...prev,
-      ...initialForm
-    }))
-  })
+      // Sync address from user's saved addresses first, then from location context
+      if (user && user.addresses && user.addresses.length > 0) {
+        const saved = user.addresses[0]
+        if (!prev.street && saved.street) updates.street = saved.street
+        if (!prev.city && saved.city) updates.city = saved.city
+        if (!prev.state && saved.state) updates.state = saved.state
+        if (!prev.pincode && saved.pincode) updates.pincode = saved.pincode
+      } else if (address && address.fullAddress) {
+        // Fallback to geo-detected/localStorage address
+        if (!prev.street && address.street) updates.street = address.street
+        if (!prev.city && address.city) updates.city = address.city
+        if (!prev.state && address.state) updates.state = address.state
+        if (!prev.pincode && address.pincode) updates.pincode = address.pincode
+      }
+
+      // Only update if there are actual changes
+      if (Object.keys(updates).length === 0) return prev
+      return { ...prev, ...updates }
+    })
+  }, [address, user])
 
   const updateField = (field, value) => {
     setDeliveryForm(prev => ({ ...prev, [field]: value }))

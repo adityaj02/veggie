@@ -57,7 +57,7 @@ const DEFAULT_MENU_SECTIONS = [
 
 const DEFAULT_SETTINGS = {
   heroBackdrop: { type: 'image', url: '/images/hero_food_spread.png' },
-  menuBackdrop: { type: 'image', url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1' }
+  menuBackdrop: { type: 'video', url: '/Chef_cooks_and_delivers_food_202608071354.mp4' }
 };
 
 async function seed() {

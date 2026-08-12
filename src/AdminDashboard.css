@@ -268,3 +268,110 @@
     padding: 24px 16px;
   }
 }
+
+/* ── Inline Forms ───────────────────────────── */
+.admin-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+}
+
+.admin-inline-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.admin-inline-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.admin-inline-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-inline-form-grid label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  font-weight: 500;
+}
+
+.admin-inline-form-grid input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.admin-inline-form-grid input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ── Confirm Modal ──────────────────────────── */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.admin-modal {
+  padding: 28px 32px;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .admin-inline-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-menu-management {
+    flex-direction: column;
+  }
+
+  .admin-menu-sidebar {
+    width: 100%;
+  }
+}

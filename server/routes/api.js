@@ -167,9 +167,9 @@ router.put('/orders/:id/cancel', async (req, res) => {
       return res.status(400).json({ error: 'Cannot cancel order at this stage' });
     }
     
-    // Check if order is older than 2 minutes (120000 ms)
-    if (Date.now() - new Date(order.createdAt).getTime() > 2 * 60 * 1000) {
-      return res.status(400).json({ error: 'Orders older than 2 minutes can only be cancelled by contacting support.' });
+    // Check if order is older than 10 minutes (600000 ms)
+    if (Date.now() - new Date(order.createdAt).getTime() > 10 * 60 * 1000) {
+      return res.status(400).json({ error: 'Orders older than 10 minutes can only be cancelled by contacting support.' });
     }
 
     order.status = 'Cancelled';

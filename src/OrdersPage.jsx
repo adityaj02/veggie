@@ -131,14 +131,14 @@ export default function OrdersPage() {
                   </div>
                   <div style={{ display: 'flex', gap: '12px' }}>
                     {(order.status === 'Pending' || order.status === 'Preparing') && (
-                      Date.now() - new Date(order.createdAt).getTime() <= 2 * 60 * 1000 ? (
+                      Date.now() - new Date(order.createdAt).getTime() <= 10 * 60 * 1000 ? (
                         <button className="track-order-btn" onClick={() => cancelOrder(order._id)} style={{ background: 'transparent', border: '1px solid var(--error)', color: 'var(--error)' }}>
                           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
                           Cancel
                         </button>
                       ) : (
                         <button className="track-order-btn" onClick={() => {
-                          const message = `Hi Veggie Kitchen! ❌\n\nI want to CANCEL my order #${order._id.slice(-6).toUpperCase()} but it has been more than 2 minutes since I placed it. Can you please help?`;
+                          const message = `Hi Veggie Kitchen! ❌\n\nI want to CANCEL my order #${order._id.slice(-6).toUpperCase()} but it has been more than 10 minutes since I placed it. Can you please help?`;
                           const whatsappUrl = `https://api.whatsapp.com/send/?phone=919811797407&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
                           window.open(whatsappUrl, '_blank');
                         }} style={{ background: 'transparent', border: '1px solid var(--on-surface-variant)', color: 'var(--on-surface-variant)' }}>
