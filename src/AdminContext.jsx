@@ -52,6 +52,7 @@ export function AdminProvider({ children }) {
     try {
       const res = await fetch(`${API_BASE}/api/seed`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           menuData: menuSections,
@@ -153,5 +154,5 @@ export function BackgroundMedia({ media, className = "" }) {
     )
   }
 
-  return <video src={media.url} className={className} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+  return <video src={media.url} className={className} autoPlay muted loop playsInline preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
 }

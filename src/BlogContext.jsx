@@ -66,6 +66,7 @@ export function BlogProvider({ children }) {
     try {
       const res = await fetch(`${API_BASE}/api/blogs`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBlog)
       })
@@ -83,7 +84,8 @@ export function BlogProvider({ children }) {
   const deleteBlog = async (id) => {
     try {
       const res = await fetch(`${API_BASE}/api/blogs/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       })
       if (res.ok) {
         setBlogs(blogs.filter(b => b.id !== id))

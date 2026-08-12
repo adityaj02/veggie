@@ -150,6 +150,7 @@ export default function CheckoutPage() {
 
       const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(orderPayload)
