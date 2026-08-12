@@ -10,7 +10,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch(`${API_BASE}/api/auth/me`);
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          credentials: 'include'
+        });
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
@@ -33,7 +35,10 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
       setUser(null);
     } catch (err) {
       console.error('Logout failed', err);
