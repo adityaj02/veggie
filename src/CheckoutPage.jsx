@@ -46,37 +46,37 @@ export default function CheckoutPage() {
   const { user } = useAuth()
 
   // Sync location context and user profile into form when they become available
+  // Sync user profile into form on mount if empty
   useEffect(() => {
-    setDeliveryForm(prev => {
-      const updates = {}
-
-      // Sync user info (name, email, phone) if form fields are still empty
-      if (user) {
-        if (!prev.name && user.name) updates.name = user.name
-        if (!prev.email && user.email) updates.email = user.email
-        if (!prev.phone && user.phone) updates.phone = user.phone
+    if (!deliveryForm.street && !deliveryForm.city && !deliveryForm.state) {
+      if (user?.addresses?.length > 0) {
+        const primary = user.addresses.find(a => a.isDefault) || user.addresses[0]
+        setDeliveryForm(prev => ({
+          ...prev,
+          name: user.name || '',
+          email: user.email || '',
+          phone: primary.phone || prev.phone,
+          street: primary.street || '',
+          city: primary.city || '',
+          state: primary.state || '',
+          pincode: primary.pincode || ''
+        }))
       }
+    }
+  }, [user])
 
-      // Sync address from user's saved addresses first, then from location context
-      if (user && user.addresses && user.addresses.length > 0) {
-        const saved = user.addresses[0]
-        if (!prev.street && saved.street) updates.street = saved.street
-        if (!prev.city && saved.city) updates.city = saved.city
-        if (!prev.state && saved.state) updates.state = saved.state
-        if (!prev.pincode && saved.pincode) updates.pincode = saved.pincode
-      } else if (address && address.fullAddress) {
-        // Fallback to geo-detected/localStorage address
-        if (!prev.street && address.street) updates.street = address.street
-        if (!prev.city && address.city) updates.city = address.city
-        if (!prev.state && address.state) updates.state = address.state
-        if (!prev.pincode && address.pincode) updates.pincode = address.pincode
-      }
-
-      // Only update if there are actual changes
-      if (Object.keys(updates).length === 0) return prev
-      return { ...prev, ...updates }
-    })
-  }, [address, user])
+  // Sync auto-detected location into form when detection succeeds
+  useEffect(() => {
+    if (locationStatus === 'detected' && address && address.street) {
+      setDeliveryForm(prev => ({
+        ...prev,
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        pincode: address.pincode
+      }))
+    }
+  }, [locationStatus, address])
 
   const updateField = (field, value) => {
     setDeliveryForm(prev => ({ ...prev, [field]: value }))
@@ -154,7 +154,6 @@ export default function CheckoutPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(orderPayload)
       })
 

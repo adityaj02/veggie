@@ -466,7 +466,7 @@ function MenuHighlights({ onViewFullMenu }) {
               <h3 className="menu-category-title">{cat.name}</h3>
             </div>
             <div className="menu-items-list">
-              {cat.items.slice(0, 6).map((item) => (
+              {cat.items.slice(0, 10).map((item) => (
                 <div key={item.name} className="menu-item">
                   <span className="menu-item-name">{item.name}</span>
                   <span className="menu-item-price">₹{item.price}</span>
