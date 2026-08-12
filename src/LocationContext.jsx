@@ -66,21 +66,19 @@ export function LocationProvider({ children }) {
         try {
           const { latitude, longitude } = position.coords
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&email=shivskukreja@gmail.com`,
-            { headers: { 'Accept-Language': 'en' } }
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           )
 
           if (!response.ok) throw new Error('Geocode failed')
 
           const data = await response.json()
-          const addr = data.address || {}
 
           const detected = {
-            street: [addr.road, addr.neighbourhood, addr.suburb].filter(Boolean).join(', '),
-            city: addr.city || addr.town || addr.village || addr.county || '',
-            state: addr.state || '',
-            pincode: addr.postcode || '',
-            fullAddress: data.display_name || '',
+            street: data.locality || data.city || '',
+            city: data.city || data.principalSubdivision || '',
+            state: data.principalSubdivision || '',
+            pincode: data.postcode || '',
+            fullAddress: [data.locality, data.city, data.principalSubdivision, data.countryName].filter(Boolean).join(', '),
           }
 
           setAddressState(detected)
