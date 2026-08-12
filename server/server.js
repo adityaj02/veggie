@@ -28,7 +28,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-const MongoStore = require('connect-mongo');
+const { MongoStore } = require('connect-mongo');
 
 // Setup Sessions
 app.use(session({
